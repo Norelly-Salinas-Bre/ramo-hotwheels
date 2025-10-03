@@ -91,8 +91,10 @@
     /* Ramo */
     #bouquet{
       position:relative;
-      width:700px;
-      height:800px;
+      width:90vw;
+      max-width:700px;
+      height:auto;
+      aspect-ratio: 7 / 8;
       display:none;
       z-index:60;
     }
@@ -126,6 +128,7 @@
       left:var(--x,50%);
       top:var(--y,50%);
       width:clamp(70px,12vw,130px);
+      max-width:120px;
       opacity:0;
       z-index:20;
       transform:translate(-50%,-50%) scale(.6) rotate(var(--rot,0deg)) translateY(200px);
@@ -170,22 +173,27 @@
       cursor:pointer;
     }
 
-    /* Botón música */
+    /* Botón de música */
     #btn-music{
       position:fixed;
-      bottom:20px;
-      right:20px;
-      z-index:200;
-      background:rgba(255,77,166,0.95);
+      top:18px;
+      right:18px;
+      font-size:22px;
+      background:#ff4d6d;
+      color:#fff;
       border:none;
       border-radius:50%;
-      width:55px;
-      height:55px;
-      font-size:24px;
+      width:46px;
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       cursor:pointer;
-      color:white;
-      box-shadow:0 6px 16px rgba(0,0,0,0.5);
+      z-index:150;
+      box-shadow:0 6px 14px rgba(0,0,0,0.4);
+      transition: transform .2s ease;
     }
+    #btn-music:active{ transform: scale(.9); }
 
     /* Responsive */
     @media(max-width:650px){
@@ -197,6 +205,9 @@
 
 <body>
   <div id="message">✨ Toca para abrir ✨</div>
+  
+  <!-- Botón música -->
+  <button id="btn-music" aria-label="Controlar música">🎵</button>
 
   <div class="center">
     <!-- Logo inicial -->
@@ -206,9 +217,7 @@
 
     <!-- Ramo -->
     <div id="bouquet">
-      <!-- Ramo base -->
       <img id="bouquet-base" src="111.png" alt="Ramo base">
-      <!-- Ramito adicional -->
       <img id="bouquet-branch" src="112.png" alt="Ramito decorativo">
 
       <!-- Carros -->
@@ -224,11 +233,8 @@
     </div>
   </div>
 
-  <!-- Botón para música -->
-  <button id="btn-music">🎵</button>
-
   <!-- Reproductor de música -->
-  <audio id="audio-music" loop>
+  <audio id="audio-music" loop playsinline>
     <source src="te_regalo.mp3" type="audio/mpeg">
     Tu navegador no soporta audio.
   </audio>
@@ -252,12 +258,11 @@
       const cardImg = document.getElementById('card-img');
       const cardText = document.getElementById('card-text');
       const cardClose = document.getElementById('card-close');
-
       const btnMusic = document.getElementById('btn-music');
-      const audio = document.getElementById('audio-music');
-      let musicPlaying = false;
 
+      const audio = document.getElementById('audio-music');
       let opened = false;
+      let musicPlaying = false;
 
       function openBouquet(){
         if(opened) return;
@@ -265,6 +270,12 @@
         logoWrap.style.display = 'none';
         bouquet.classList.add('show');
         message.textContent = "✨ Todo lo bonito para ti ✨";
+
+        // Reproducir música al abrir
+        audio.play().then(() => {
+          musicPlaying = true;
+          btnMusic.textContent = "🔇";
+        }).catch(err => console.log("No se pudo reproducir música:", err));
 
         cars.forEach((c, i) => {
           setTimeout(() => {
@@ -279,6 +290,23 @@
       }
 
       logoWrap.addEventListener('click', openBouquet);
+
+      // Botón de música
+      btnMusic.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          if (!musicPlaying) {
+            await audio.play();
+            btnMusic.textContent = "🔇";
+          } else {
+            audio.pause();
+            btnMusic.textContent = "🎵";
+          }
+          musicPlaying = !musicPlaying;
+        } catch (err) {
+          console.error("Error al reproducir música:", err);
+        }
+      });
 
       cars.forEach(img => {
         function showCard(e) {
@@ -300,18 +328,6 @@
         }
       });
 
-      // Música
-      btnMusic.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (!musicPlaying) {
-          audio.play().catch(err => console.error("No se pudo reproducir:", err));
-          btnMusic.textContent = "🔇";
-        } else {
-          audio.pause();
-          btnMusic.textContent = "🎵";
-        }
-        musicPlaying = !musicPlaying;
-      });
     })();
   </script>
 </body>
